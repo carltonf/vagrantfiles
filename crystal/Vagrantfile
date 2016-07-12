@@ -2,8 +2,9 @@
 # vi: set ft=ruby :
 
 Vagrant.configure(2) do |config|
-  config.vm.box = "vagrant-crystal"
+  config.vm.box = "crystal-maker"
 
+  config.vm.name = "crystal-vagrant"
   config.vm.box_check_update = false
 
   # Enable the most common one
@@ -19,7 +20,8 @@ Vagrant.configure(2) do |config|
   # config.vm.network "public_network"
 
   # Other than the default '.' => '/vagrant'
-  config.vm.synced_folder "../Dropbox", "/Dropbox"
+  WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
+  config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
 
   config.vm.provider "virtualbox" do |vb|
     # Preparing the base box requires a much larger memory
@@ -27,8 +29,8 @@ Vagrant.configure(2) do |config|
   end
 
   # Provision personal configurations, system-wide changes should be in the base
-  # box creation.
-  config.vm.provision "shell", inline: <<-SHELL
+  # box creation. Do NOT RUN with SUDO
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
     cd $HOME
     git clone /Dropbox/icrepos-bare/dotfiles.git
     cd dotfiles
