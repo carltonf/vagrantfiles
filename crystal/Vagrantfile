@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "vagrant-crystal"
+
+  config.vm.box_check_update = false
+
+  # Enable the most common one
+  config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # NOTE: virtualbox hostonly netowrk dhcp is dumb s.t. it would
+  # continue to offer 101 to new clients even though it's assigned by others.
+  config.vm.network "private_network", ip: "192.168.56.200"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  # config.vm.network "public_network"
+
+  # Other than the default '.' => '/vagrant'
+  config.vm.synced_folder "../Dropbox", "/Dropbox"
+
+  config.vm.provider "virtualbox" do |vb|
+    # Preparing the base box requires a much larger memory
+    vb.memory = "256"
+  end
+
+  # Provision personal configurations, system-wide changes should be in the base
+  # box creation.
+  config.vm.provision "shell", inline: <<-SHELL
+    cd $HOME
+    git clone /Dropbox/icrepos-bare/dotfiles.git
+    cd dotfiles
+    /bin/bash ./Init.sh
+
+    cd $HOME
+    tar xvf /Dropbox/icrepos-bare/manual.nongit/dot.gnupg.tar
+    echo '** INFO: pseduoSensitive requires manual management'
+  SHELL
+end
