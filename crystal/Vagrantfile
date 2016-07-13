@@ -7,6 +7,9 @@ Vagrant.configure(2) do |config|
   config.vm.hostname = "crystal-vagrant"
   config.vm.box_check_update = false
 
+  # For personal use, do not generate new pair of keys.
+  config.ssh.insert_key = false
+
   # Enable the most common one
   config.vm.network "forwarded_port", guest: 80, host: 8080
 
