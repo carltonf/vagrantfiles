@@ -4,7 +4,7 @@
 Vagrant.configure(2) do |config|
   config.vm.box = "crystal-maker"
 
-  config.vm.name = "crystal-vagrant"
+  config.vm.hostname = "crystal-vagrant"
   config.vm.box_check_update = false
 
   # Enable the most common one
