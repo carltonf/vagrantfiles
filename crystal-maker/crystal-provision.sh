@@ -17,6 +17,11 @@ sudo chsh -s /usr/bin/fish vagrant
 # Default Arch keymap is not set, but the base box we use have it set to `es`
 sudo localectl set-keymap --no-convert us
 
+# the base box we used by default doesn't enable vbox service
+systemctl enable vboxservice
+
 # Clean up
 sudo pacman -Scc --noconfirm
 cat /dev/null > ~/.bash_history && history -c && exit
+
+# -*- buffer-file-coding-system: utf-8-unix -*-
