@@ -35,6 +35,10 @@ Vagrant.configure(2) do |config|
     # The following is only needed for dynamic private network
     # default properties: https://www.virtualbox.org/manual/ch04.html#guestadd-guestprops
     # NOTE: in order for default properties be set by VBox, vboxservice needs to be enabled in guest
+    #
+    # NOTE: it's possible that at the time the following command is run, the
+    # return ip is not the real ip. Particularly if the VM has got a new IP. In
+    # such case, manually run `vagrant hostmanager` to fix it.
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
       if vm.id
         `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
