@@ -75,8 +75,21 @@ Vagrant.configure(2) do |config|
     tar xvf /Dropbox/icrepos-bare/manual.nongit/dot.gnupg.tar
     echo '** INFO: pseduoSensitive requires manual management'
 
-    mkdir -pv .ssh
-    install -m 0600 /vagrant/vagrant_keys/vagrant .ssh/id_rsa
-    install -m 0600 /vagrant/vagrant_keys/vagrant.pub .ssh/id_rsa.pub
+    # ssh configs
+    install -vm 0600 -d .ssh
+    install -vm 0600 -d .ssh/controlmasters
+    install -vm 0600 /vagrant/vagrant_keys/vagrant .ssh/id_rsa
+    install -vm 0600 /vagrant/vagrant_keys/vagrant.pub .ssh/id_rsa.pub
+    install -vm 0600 /vagrant/ssh-sample.config .ssh/config
+
+    # user systemd service
+    # NO need to set here, as this settings can be managed in git
+
+    # About data:
+    # 1. Data should be stored in separate disks with frequent backup
+    # 2. disks should be mounted at SATA port with hot-pluggable bit set.
+    # 3. Preferrably, the whole data disk is formatted using partitionless btrfs
+    # and mounted with lza compression enabled.
+
   SHELL
 end
