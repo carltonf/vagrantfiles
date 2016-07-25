@@ -10,9 +10,6 @@ Vagrant.configure(2) do |config|
   # For personal use, do not generate new pair of keys.
   config.ssh.insert_key = false
 
-  # Enable the most common one
-  config.vm.network "forwarded_port", guest: 80, host: 8080
-
   config.vm.network "private_network", type: "dhcp"
   # config.vm.network "private_network", ip: "192.168.56.7"
 
@@ -37,8 +34,9 @@ Vagrant.configure(2) do |config|
     # NOTE: in order for default properties be set by VBox, vboxservice needs to be enabled in guest
     #
     # NOTE: it's possible that at the time the following command is run, the
-    # return ip is not the real ip. Particularly if the VM has got a new IP. In
-    # such case, manually run `vagrant hostmanager` to fix it.
+    # return ip is not the real ip or in the case of docker daemon. Particularly
+    # if the VM has got a new IP. In such case, manually run `vagrant
+    # hostmanager` to fix it.
     config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
       if vm.id
         `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
@@ -77,13 +75,17 @@ Vagrant.configure(2) do |config|
     echo '** INFO: pseduoSensitive requires manual management'
 
     # ssh configs
-    install -vm 0600 -d .ssh
-    install -vm 0600 -d .ssh/controlmasters
+    cd $HOME
+    install -vm 0700 -d .ssh
+    install -vm 0700 -d .ssh/controlmasters
     install -vm 0600 /vagrant/vagrant_keys/vagrant .ssh/id_rsa
     install -vm 0600 /vagrant/vagrant_keys/vagrant.pub .ssh/id_rsa.pub
-    install -vm 0600 /vagrant/ssh-sample.config .ssh/config
+    # sensitive ssh keys: encrypted though
+    CW_SSH_KEYS_DIR=/Dropbox/icrepos-bare/manual.nongit/ssh/.ssh
+    install -vm 0600 ${CW_SSH_KEYS_DIR}/id_rsa-crystal-w .ssh/
+    install -vm 0600 ${CW_SSH_KEYS_DIR}/id_rsa-crystal-w.pub .ssh/
 
-    # user systemd service
+    # Enabled user systemd service
     # NO need to set here, as this settings can be managed in git
 
     # About data:
@@ -91,6 +93,5 @@ Vagrant.configure(2) do |config|
     # 2. disks should be mounted at SATA port with hot-pluggable bit set.
     # 3. Preferrably, the whole data disk is formatted using partitionless btrfs
     # and mounted with lza compression enabled.
-
   SHELL
 end
