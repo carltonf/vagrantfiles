@@ -20,9 +20,9 @@ localectl set-keymap --no-convert us
 
 # the base box we used by default doesn't enable vbox service
 systemctl enable vboxservice
-# manage Samba
-# TODO: Install my pre-configured smb.conf directly
-cp /etc/samba/smb.conf.default /etc/samba/smb.conf
+# Manage Samba
+# Install the preconfigured, passwordless vagrant samba share
+install -m 0644 /vagrant/smb.conf /etc/samba/smb.conf
 systemctl enable smbd
 # manage Docker
 usermod -aG docker vagrant
