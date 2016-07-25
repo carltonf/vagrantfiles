@@ -3,7 +3,8 @@
 
 pacman -Syu --noconfirm
 pacman -S --noconfirm --needed --assume-installed=xclip \
-     git mosh neovim fish p7zip pass rsync sdcv the_silver_searcher tmux wget stow sshpass sshfs samba
+       git mosh neovim fish p7zip pass rsync sdcv the_silver_searcher tmux wget stow sshpass sshfs \
+       samba docker docker-compose
 ln -sv /usr/bin/nvim /usr/local/bin/vi
 
 # Set root password to 'vagrant' for convenience.
@@ -19,13 +20,21 @@ localectl set-keymap --no-convert us
 
 # the base box we used by default doesn't enable vbox service
 systemctl enable vboxservice
+# manage Samba
+# TODO: Install my pre-configured smb.conf directly
+cp /etc/samba/smb.conf.default /etc/samba/smb.conf
+systemctl enable smbd
+# manage Docker
+usermod -aG docker vagrant
+systemctl enable docker
+# FUSE settings: s.t. sshfs mounted directory may be seen in windows
+sed -i -re 's/#(user_allow_other)/\1/' /etc/fuse.conf
 
-# Clean up
+# for convenience
+timedatectl set-timezone Asia/Shanghai
+
+# LAST STEP: Clean up
 sudo pacman -Scc --noconfirm
 cat /dev/null > ~/.bash_history && history -c && exit
-
-# FUSE and Samba settings
-sed -i -re 's/#(user_allow_other)/\1/' /etc/fuse.conf
-# TODO samba setup
 
 # -*- buffer-file-coding-system: utf-8-unix -*-
