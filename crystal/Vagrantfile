@@ -59,8 +59,9 @@ Vagrant.configure(2) do |config|
   config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
 
   config.vm.provider "virtualbox" do |vb|
-    # Preparing the base box requires a much larger memory
-    vb.memory = "256"
+    # As 20160725, crystal box is using docker for most local development and
+    # thus a larger memory is needed.
+    vb.memory = "1024"
   end
 
   # Provision personal configurations, system-wide changes should be in the base
