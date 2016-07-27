@@ -85,6 +85,12 @@ Vagrant.configure(2) do |config|
 
     # Enabled user systemd service
     # NO need to set here, as this settings can be managed in git
+    #
+    # Enable lingering: necessary for session-persistent tmux and etc.
+    #
+    # see https://lists.freedesktop.org/archives/systemd-devel/2016-May/036583.html
+    # and man page on logind.conf and loginctl
+    sudo loginctl enable-linger
 
     # About data:
     # 1. Data should be stored in separate disks with frequent backup
