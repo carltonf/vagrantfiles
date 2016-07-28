@@ -1,0 +1,51 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Docker host machine for use in mainland, this machine use `daocloud` to speed
+# up connection speed.
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "geerlinggy/ubuntu1604"
+  config.vm.hostname = "dao-host"
+
+  config.vm.network "private_network", type: "dhcp"
+
+  # hostname trick, refer to crystal/Vagrantfile for detailed explanation
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = false
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+    config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+      if vm.id
+        `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
+      end
+    end
+    config.vm.synced_folder  ENV["WINDIR"] + "/System32/drivers", "/tmp/windrivers"
+    config.vm.provision "shell", run: "always", name: "bind-hosts",
+                        inline: "mount --bind /tmp/windrivers/etc/hosts /etc/hosts"
+  else
+    $stderr.puts "WARNING: Hostname lookup requires vagrant-hostmanager plugin."
+  end
+  # hostname trick END
+
+  config.vm.provider "virtualbox" do |vb|
+    # Be sure to have enough RAM for *serious* work
+    vb.memory = "2048"
+  end
+
+  WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
+  config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
+
+  config.vm.provision "shell", inline: <<-SHELL
+    curl -sSL https://get.daocloud.io/docker | sh
+    sudo service docker status
+
+    echo "WARN: install manually daomonitor to take advantage of network speedup."
+
+    # NOTE: Vagrant provider issue docker command as user `vagrant` _without_
+    # sudo, so we need to add `vagrant` to `docker` group
+    sudo usermod -aG docker vagrant
+  SHELL
+end
