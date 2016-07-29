@@ -5,10 +5,11 @@
 # up connection speed.
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "geerlinggy/ubuntu1604"
+  config.vm.box = "geerlingguy/ubuntu1604"
   config.vm.hostname = "dao-host"
 
-  config.vm.network "private_network", type: "dhcp"
+  # config.vm.network "private_network", type: "dhcp"
+  config.vm.network "public_network"
 
   # hostname trick, refer to crystal/Vagrantfile for detailed explanation
   if Vagrant.has_plugin?("vagrant-hostmanager")
@@ -39,10 +40,15 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
 
   config.vm.provision "shell", inline: <<-SHELL
+    # NOTE at my 3rd installation, the daocloud repo actually fails me...
+    # So unreliabe, anyway install it directly from ubuntu repo is ok, as this
+    # is ubuntu 16.04
     curl -sSL https://get.daocloud.io/docker | sh
     sudo service docker status
 
-    echo "WARN: install manually daomonitor to take advantage of network speedup."
+    # NOTE: the following has personal key in it so not automate anyway
+    echo "WARN: need to manually configure dao mirror registry."
+    echo "see https://www.daocloud.io/mirror#accelerator-doc"
 
     # NOTE: Vagrant provider issue docker command as user `vagrant` _without_
     # sudo, so we need to add `vagrant` to `docker` group
