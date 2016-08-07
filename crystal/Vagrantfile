@@ -60,6 +60,13 @@ Vagrant.configure(2) do |config|
     # As 20160725, crystal box is using docker for most local development and
     # thus a larger memory is needed.
     vb.memory = "1024"
+    # NOTE a very IMPORTANT setting! This forces VBoxService to sync time every
+    # 10 secs instead of the default 20 mins, which may cause fatal errors from
+    # `systemd-logind` that freeze the whole system (this happens after I
+    # suspending the post for several times)
+    # Ref: http://stackoverflow.com/a/19492466
+    # Another ref that offers more explanation and settings, though it's not about Vagrant: http://superuser.com/a/765014
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
   end
 
   # Provision personal configurations, system-wide changes should be in the base
