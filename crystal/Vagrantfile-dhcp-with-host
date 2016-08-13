@@ -1,0 +1,75 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+  config.vm.box = "crystal-maker"
+
+  config.vm.hostname = "crystal"
+  config.vm.box_check_update = false
+
+  # For personal use, do not generate new pair of keys.
+  config.ssh.insert_key = false
+
+  config.vm.network "private_network", type: "dhcp"
+  # config.vm.network "private_network", ip: "192.168.56.7"
+
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+    ### Hostname trick
+    #
+    # The following block uses a popular plug-in `hostmanager` to manage
+    # host/guest hosts files. However, since `hostmanager` is designed for
+    # multi-machine environment, it would not update the hosts files of vagrant
+    # boxes that are not in the multi-machine configuration. Here I bind-mount
+    # host (in my case, windows 10) hosts file to /etc/hosts and in effect the
+    # host hosts file serves as local name server that _syncs_ across all vagrant
+    # boxes that uses this trick.
+    #
+    config.hostmanager.enabled = true
+    config.hostmanager.manage_host = true
+    config.hostmanager.manage_guest = false
+    config.hostmanager.ignore_private_ip = false
+    config.hostmanager.include_offline = true
+    # The following is only needed for dynamic private network
+    # default properties: https://www.virtualbox.org/manual/ch04.html#guestadd-guestprops
+    # NOTE: in order for default properties be set by VBox, vboxservice needs to be enabled in guest
+    #
+    # NOTE: it's possible that at the time the following command is run, the
+    # return ip is not the real ip or in the case of docker daemon. Particularly
+    # if the VM has got a new IP. In such case, manually run `vagrant
+    # hostmanager` to fix it.
+    config.hostmanager.ip_resolver = proc do |vm, resolving_vm|
+      if vm.id
+        `VBoxManage guestproperty get #{vm.id} "/VirtualBox/GuestInfo/Net/1/V4/IP"`.split()[1]
+      end
+    end
+    # NOTE: Funny that appending `etc` after drivers has no effect, 'etc' may be just a link
+    config.vm.synced_folder  ENV["WINDIR"] + "/System32/drivers", "/tmp/windrivers"
+    # NOTE: the following can mount hosts file multiple times for suspend/resume use cases
+    config.vm.provision "shell", run: "always", name: "bind-hosts",
+                        inline: "mount --bind /tmp/windrivers/etc/hosts /etc/hosts"
+    ### Hostname trick END
+  else
+    $stderr.puts "WARNING: Hostname lookup requires vagrant-hostmanager plugin."
+  end
+
+  # Other than the default '.' => '/vagrant'
+  WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
+  config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
+
+  config.vm.provider "virtualbox" do |vb|
+    # As 20160725, crystal box is using docker for most local development and
+    # thus a larger memory is needed.
+    vb.memory = "1024"
+    # NOTE a very IMPORTANT setting! This forces VBoxService to sync time every
+    # 10 secs instead of the default 20 mins, which may cause fatal errors from
+    # `systemd-logind` that freeze the whole system (this happens after I
+    # suspending the post for several times)
+    # Ref: http://stackoverflow.com/a/19492466
+    # Another ref that offers more explanation and settings, though it's not about Vagrant: http://superuser.com/a/765014
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
+  end
+
+  # Provision personal configurations, system-wide changes should be in the base
+  # box creation. Do NOT RUN with SUDO
+  config.vm.provision "shell", privileged: false, path: 'crystal-provision.sh'
+end
