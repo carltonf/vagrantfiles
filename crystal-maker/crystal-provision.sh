@@ -2,9 +2,11 @@
 # NOTE by default there is no need for sudo, as vagrant runs script with sudo.
 
 pacman -Syu --noconfirm
-pacman -S --noconfirm --needed --assume-installed=xclip \
-       git mosh neovim fish p7zip pass rsync sdcv the_silver_searcher tmux wget stow sshpass sshfs \
-       samba docker docker-compose
+pacman -S --noconfirm --needed --assume-installed=xclip               \
+       git mosh neovim fish pass the_silver_searcher tmux stow sshfs  \
+       p7zip rsync sdcv wget sshpass                                  \
+       samba docker docker-compose                                    \
+       nodejs npm
 ln -sv /usr/bin/nvim /usr/local/bin/vi
 
 # Set root password to 'vagrant' for convenience.
