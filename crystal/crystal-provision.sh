@@ -10,6 +10,9 @@ cd dotfiles
 cd $HOME
 tar xvf /Dropbox/icrepos-bare/manual.nongit/dot.gnupg.tar
 echo '** INFO: pseduoSensitive requires manual management'
+# Enable daocloud docker accelarator
+sudo install -m 0644 -D -t /etc/systemd/system/docker.service.d/ \
+     /Dropbox/icrepos-bare/manual.nongit/docker/daocloud.conf
 
 # ssh configs
 cd $HOME
