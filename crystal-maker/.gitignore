@@ -1,5 +1,0 @@
-.vagrant/
-
-# generate box
-crystal-maker-*.box
-
