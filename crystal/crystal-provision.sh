@@ -42,6 +42,9 @@ $sysctrluser start ssh-agent.service
 # and man page on logind.conf and loginctl
 sudo loginctl enable-linger
 
+# Scalfold my home
+cd $HOME
+mkdir -pv work try refs
 # About data:
 # Backup important data with Dropbox, host directories and git repo.
 
