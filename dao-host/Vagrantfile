@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |vb|
     # Be sure to have enough RAM for *serious* work
-    vb.memory = "2048"
+    vb.memory = "8192"
   end
 
   WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
