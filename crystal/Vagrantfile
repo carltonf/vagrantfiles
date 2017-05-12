@@ -26,6 +26,8 @@ Vagrant.configure(2) do |config|
   config.vm.network "private_network", ip: "192.168.56.77"
   # NOTE Same as default, but mark host_ip as all.
   config.vm.network "forwarded_port", guest: 22, host: 2222, host_ip: '', auto_correct: true, id: 'ssh'
+  # NOTE forward carltonf-blog server, see https://github.com/carltonf/carltonf-blog-source
+  config.vm.network "forwarded_port", guest: 4000, host: 4000, host_ip: '', auto_correct: true, id: 'blog'
   config.vm.synced_folder  ENV["WINDIR"] + "/System32/drivers", "/tmp/windrivers"
   # FIX: the following can mount hosts file multiple times for suspend/resume use cases
   config.vm.provision "shell", run: "always", name: "bind-hosts",
