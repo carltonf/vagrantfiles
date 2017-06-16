@@ -1,0 +1,17 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ses4-ceph-deploy-20161223"
+
+  config.vm.box_check_update = false
+  config.ssh.insert_key = false
+
+  config.vm.network "private_network", type: "dhcp"
+  config.vm.hostname = "lvm-thin"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.linked_clone = true
+    vb.memory = "2048"
+  end
+end
