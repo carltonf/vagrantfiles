@@ -4,9 +4,8 @@
 pacman -Syu --noconfirm
 pacman -S --noconfirm --needed --assume-installed=xclip               \
        git mosh neovim fish pass the_silver_searcher tmux stow sshfs  \
-       p7zip rsync sdcv wget sshpass                                  \
-       samba docker docker-compose                                    \
-       nodejs npm
+       p7zip rsync sdcv wget sshpass dnsutils gdb pkgfile             \
+       samba docker docker-compose
 ln -sv /usr/bin/nvim /usr/local/bin/vi
 
 # Set root password to 'vagrant' for convenience.
@@ -35,8 +34,23 @@ sed -i -re 's/#(user_allow_other)/\1/' /etc/fuse.conf
 # for convenience
 timedatectl set-timezone Asia/Shanghai
 
-# LAST STEP: Clean up
+# Network naming: use the enp0sX (specific to Terrywang)
+rm -vf /etc/udev/rules.d/66-persistent-net.rules
+netctl disable eth0
+rm -vf /etc/netctl/eth0
+cp -v /etc/netctl/{examples/ethernet-dhcp,enp0s3}
+sed -i 's/eth0/enp0s3/g' /etc/netctl/enp0s3
+netctl enable enp0s3
+
+# reverse some terrywang configurations
+rm -vf /home/vagrant/.tmux.conf
+# LANG is set to en_AU.utf-8, non-crucial changes, I'll omit here
+
+# LAST STEP: Clean up and freeze the time
 sudo pacman -Scc --noconfirm
 cat /dev/null > ~/.bash_history && history -c && exit
+## NOTE really useful as we can avoid new package installation requiring system upgrade.
+# Ref: https://wiki.archlinux.org/index.php/Arch_Linux_Archive
+echo "Server=https://archive.archlinux.org/repos/$(date +%Y/%m/%d)/\$repo/os/\$arch" > /etc/pacman.d/mirrorlist
 
 # -*- buffer-file-coding-system: utf-8-unix -*-
