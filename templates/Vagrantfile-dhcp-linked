@@ -2,16 +2,18 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ses4-ceph-deploy-20161223"
+  config.vm.box = "<box name>"
 
   config.vm.box_check_update = false
   config.ssh.insert_key = false
 
   config.vm.network "private_network", type: "dhcp"
-  config.vm.hostname = "lvm-thin"
+  config.vm.hostname = "<hostname>"
 
   config.vm.provider "virtualbox" do |vb|
     vb.linked_clone = true
     vb.memory = "2048"
+    # TODO if not good enough, we need to set up a local ntp server
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
   end
 end
