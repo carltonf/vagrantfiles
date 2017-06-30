@@ -1,21 +1,20 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  # NOTE still use ses3 builder it applies to master ceph as well for now  at least
-  config.vm.box = "ses3-builder-20170109"
-  config.vm.box_check_update = false
+# Build machine using docker
 
-  # If not for other "serious" purpose, keep it simple
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+
+  config.vm.box_check_update = false
   config.ssh.insert_key = false
 
-  # TODO we need better way to keep track of all those VMs.
-  config.vm.network "private_network", ip: "192.168.56.65"
-  config.vm.network "forwarded_port", guest: 22, host: 2222, host_ip: '', auto_correct: true, id: 'ssh'
+  config.vm.network "private_network", type: "dhcp"
   config.vm.hostname = "ceph-builder"
 
   config.vm.provider "virtualbox" do |vb|
-     vb.memory = "8192"
+     vb.memory = 16384
+     vb.cpus= 4
   end
 
   # config.vm.provision "shell", inline: <<-SHELL

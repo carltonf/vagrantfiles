@@ -1,0 +1,6 @@
+A base box serving two purposes:
+
+1. A building box (using docker) for ceph.
+2. A base box creator for ceph-docker.
+
+Notes on "provision-WIP": ingredients for provision scripts 
