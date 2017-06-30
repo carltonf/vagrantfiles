@@ -5,7 +5,7 @@ pacman -Syu --noconfirm
 pacman -S --noconfirm --needed --assume-installed=xclip               \
        git mosh neovim fish pass the_silver_searcher tmux stow sshfs  \
        p7zip rsync sdcv wget sshpass dnsutils gdb pkgfile             \
-       samba docker docker-compose
+       samba docker docker-compose dnsmasq
 ln -sv /usr/bin/nvim /usr/local/bin/vi
 
 # Set root password to 'vagrant' for convenience.
