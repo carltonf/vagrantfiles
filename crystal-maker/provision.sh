@@ -25,10 +25,13 @@ systemctl enable vboxservice
 # Install the preconfigured, passwordless vagrant samba share
 install -m 0644 /vagrant/smb.conf /etc/samba/smb.conf
 systemctl enable smbd
-# manage Docker
+# Manage Docker
 usermod -aG docker vagrant
 systemctl enable docker
 install -m 0600 /vagrant/etc-docker-daemon.json /etc/docker/daemon.json
+# Manage DNS and DHCP Server
+systemctl enable dnsmasq
+install -m 0600 /vagrant/dnsmasq.conf /etc/dnsmasq.conf
 # FUSE settings: s.t. sshfs mounted directory may be seen in windows
 sed -i -re 's/#(user_allow_other)/\1/' /etc/fuse.conf
 
