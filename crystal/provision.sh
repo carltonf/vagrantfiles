@@ -10,7 +10,9 @@ cd dotfiles
 cd $HOME
 tar xvf /Dropbox/icrepos-bare/manual.nongit/dot.gnupg.tar
 echo '** INFO: pseduoSensitive requires manual management'
-# Enable daocloud docker accelarator
+# Docker
+# Enable daocloud docker accelarator. Here because it contains sensitive personal info.
+# remove it and restart docker if need to use the main docker registry.
 sudo install -m 0644 -D -t /etc/systemd/system/docker.service.d/ \
      /Dropbox/icrepos-bare/manual.nongit/docker/daocloud.conf
 
@@ -32,19 +34,19 @@ install -vm 0600 ${CW_SSH_KEYS_DIR}/id_rsa-crystal-w.pub .ssh/
 # Make sure `--user` toggle is on
 sysctrluser='systemctl --user'
 $sysctrluser daemon-reload
-$sysctrluser start tmux.service
-$sysctrluser start gpg-agent.service
+# $sysctrluser start tmux.service
+# $sysctrluser start gpg-agent.service
 $sysctrluser start ssh-agent.service
-
-# IMPORTANT: Enable lingering: necessary for session-persistent tmux and agents.
-#
-# see https://lists.freedesktop.org/archives/systemd-devel/2016-May/036583.html
-# and man page on logind.conf and loginctl
-sudo loginctl enable-linger
 
 # Scalfold my home
 cd $HOME
 mkdir -pv work try refs
 # About data:
 # Backup important data with Dropbox, host directories and git repo.
+
+# IMPORTANT: Enable lingering: necessary for session-persistent tmux and agents.
+#
+# see https://lists.freedesktop.org/archives/systemd-devel/2016-May/036583.html
+# and man page on logind.conf and loginctl
+sudo loginctl enable-linger
 

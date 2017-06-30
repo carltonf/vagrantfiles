@@ -6,13 +6,10 @@ Vagrant.configure(2) do |config|
   config.vm.box = "crystal-maker"
 
   config.vm.box_check_update = false
-  # NOTE No new keys s.t. easy access for non-host machines (only need vagrant key)
   config.ssh.insert_key = false
 
   config.vm.hostname = "crystal"
-  ## NOTE Use a fixed IP address, NOT dispatched by VirtualBox's DHCP server
-  # By default, the range of DHCP IPs starts from 192.168.56.100.
-  # Check the network preferences for details.
+  # NOTE now this box is also the dhcp and dns server for the internal network
   config.vm.network "private_network", ip: "172.28.128.77"
 
   # NOTE Same as default, but mark host_ip as any for foreign host access. Main VM privilage.
@@ -36,5 +33,5 @@ Vagrant.configure(2) do |config|
 
   # Provision personal configurations, system-wide changes should be in the base
   # box creation. Do NOT RUN with SUDO
-  config.vm.provision "shell", privileged: false, path: 'crystal-provision.sh'
+  config.vm.provision "shell", privileged: false, path: 'provision.sh'
 end
