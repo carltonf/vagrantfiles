@@ -28,6 +28,7 @@ systemctl enable smbd
 # manage Docker
 usermod -aG docker vagrant
 systemctl enable docker
+install -m 0600 /vagrant/etc-docker-daemon.json /etc/docker/daemon.json
 # FUSE settings: s.t. sshfs mounted directory may be seen in windows
 sed -i -re 's/#(user_allow_other)/\1/' /etc/fuse.conf
 
