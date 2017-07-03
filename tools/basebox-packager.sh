@@ -4,6 +4,8 @@
 # registry.
 # Tested with bash bundled with 'git-for-windows'.
 
+echo "TODO: Adapt this script to be more general. (maybe with packe:)"
+
 baseboxName='crystal-maker'
 
 # NOTE: there can be residual maker boxes
