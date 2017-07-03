@@ -1,0 +1,20 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Manully updating my arch crystal box
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "crystal-arch"
+
+  config.vm.box_check_update = false
+  # NOTE No new keys s.t. easy access for non-host machines (only need vagrant key)
+  config.ssh.insert_key = false
+
+  config.vm.hostname = "crystal-arch-update"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+    # TODO if not good enough, we need to set up a local ntp server
+    vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
+  end
+end
