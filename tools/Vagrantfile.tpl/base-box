@@ -1,0 +1,30 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Template for trying out or customizing imported base boxes
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "<box name>"
+
+  config.vm.box_check_update = false
+  # NOTE No new keys s.t. easy access for non-host machines (only need vagrant key)
+  config.ssh.insert_key = false
+
+  ## NOTE Vagrant's dhcp is default to "172.28.128.X".
+  # The DHCP server is crystal.cw (172.28.128.77), ranging from 172.28.128.100-254.
+  # Forced domain '.cv.' with crystal.cw as Authority
+  # config.vm.network "private_network", type: "dhcp"
+  config.vm.hostname = "<hostname>"
+
+  # NOTE extra shared folders
+  config.vm.synced_folder  '../public', "/vagrant/public"
+  WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
+  config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+
+  # NOTE it's likely we need provisioning
+  # config.vm.provision "shell", privileged: false, path: 'provision.sh'
+end
