@@ -17,7 +17,8 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "<hostname>"
 
   # NOTE extra shared folders
-  config.vm.synced_folder  '../public', "/vagrant/public"
+  VAGRANTFILES = ENV['HOME'] + "/Vagrant/vagrantfiles"
+  config.vm.synced_folder  VAGRANTFILES + "/public", "/vagrant/public"
   WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
   config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
 
