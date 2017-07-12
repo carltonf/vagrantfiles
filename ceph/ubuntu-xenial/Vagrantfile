@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ceph/ubuntu-xenial"
+
+  config.vm.box_check_update = false
+  config.ssh.insert_key = false
+
+  config.vm.hostname = "ceph-ubuntu-xenial"
+
+  ## NOTE the vbox guest additions installed is broken and vboxsf is not found
+  # NOTE extra shared folders
+  # VAGRANTFILES = ENV['HOME'] + "/Vagrant/vagrantfiles"
+  # config.vm.synced_folder  VAGRANTFILES + "/public", "/vagrant/public"
+  # WINHOME = ENV['HOMEDRIVE'] + "/" + ENV['HOMEPATH']
+  # config.vm.synced_folder  WINHOME + "/Dropbox", "/Dropbox"
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+
+  # NOTE it's likely we need provisioning
+  # config.vm.provision "shell", privileged: false, path: 'provision.sh'
+end
