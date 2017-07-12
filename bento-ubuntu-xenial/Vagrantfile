@@ -17,8 +17,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = "bento-ubuntu-xenial"
 
   config.vm.provider "virtualbox" do |vb|
-    vb.linked_clone = true
-    vb.memory = "1024"
+    vb.memory = "2048"
     # TODO if not good enough, we need to set up a local ntp server
     vb.customize [ "guestproperty", "set", :id, "/VirtualBox/GuestAdd/VBoxService/--timesync-set-threshold", 10000 ]
   end
