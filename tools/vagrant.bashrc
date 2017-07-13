@@ -4,7 +4,7 @@
 
 ## For Vagrant, notably some Windows programs still expect to see Windows path style
 if [ "$(hostname)" = "cx5510" ]; then
-    export VAGRANT_HOME="D:/Carl Xiong/.vagrant.d"
+    export VAGRANT_HOME='D:/Home/.vagrant.d'
 fi
 function vagrantq {
     local vagrant_vm_name="$1"
@@ -35,6 +35,8 @@ function vagrantq {
 
 # NOTE work around for vagrant 1.9.5 as 'vagrant ssh' doesn't work any more.
 # (acutally the interactive ssh doesn't work since 1.8)
+# NOTE The above doesn't work due to the pecularity of MobaXterm (not a tty,
+# stdin is not tty and etc.)
 function vagrant-ssh {
     # NOTE: check port to speed things up
     if [ x"$SSH_FORWARDED_PORT" = x ]; then
@@ -45,6 +47,6 @@ function vagrant-ssh {
     fi
     local ssh_port="$SSH_FORWARDED_PORT"
 
+    # TODO: To use the key file. `vagrant ssh-config` would also list the keyfile
     sshpass -p vagrant ssh -p "${ssh_port}" vagrant@localhost "$*"
-    # sshpass -p vagrant ssh -p 2200 vagrant@localhost
 }
