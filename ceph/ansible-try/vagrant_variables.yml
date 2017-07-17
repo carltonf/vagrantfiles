@@ -47,10 +47,8 @@ disks: "[ '/dev/sdb', '/dev/sdc' ]"
 #   - https://download.gluster.org/pub/gluster/purpleidea/vagrant/
 vagrant_box: ceph/ubuntu-xenial
 
-# TODO I don't think we need to set this
 # vagrant_sync_dir: /home/vagrant/sync
 
-# TODO: figure out why
 os_tuning_params:
   - { name: kernel.pid_max, value: 4194303 }
   - { name: fs.file-max, value: 26234859 }

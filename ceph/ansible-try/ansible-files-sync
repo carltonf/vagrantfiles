@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# A script to sync generated Ansible files (inventory, variables) with Ansible
+# control machines
+# Currently:
+# 1. Sync inventory file
+
+
+INVENTORY=inventory.ini
+
+rm $INVENTORY
+vagrant validate
+
+scp $INVENTORY vagrant@crystal.cw:/opt/ssd/sources/ceph-ansible/hosts

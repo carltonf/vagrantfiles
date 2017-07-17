@@ -2,6 +2,10 @@
 # vi: set ft=ruby :
 
 # Vagrant file for trying out ceph-ansible locally
+# NOTE changes from the upstream one
+# [x] Simplify Vagrantfile: only VirtualBox
+# [x] adapt the ansible provisioner spurn out files so we can use crystal.cw as
+# control machine
 
 require 'yaml'
 require 'time'
@@ -25,7 +29,7 @@ CLUSTER_SUBNET  = settings['cluster_subnet']
 BOX             = settings['vagrant_box']
 BOX_URL         = settings['vagrant_box_url']
 SYNC_DIR        = settings['vagrant_sync_dir']
-MEMORY          = settings['memory']
+MEMORY          = settings['memory'] || 1024
 ETH             = settings['eth']
 USER            = settings['ssh_username']
 DEBUG           = settings['debug']
@@ -35,75 +39,87 @@ ASSIGN_STATIC_IP = false
 DISABLE_SYNCED_FOLDER = settings.fetch('vagrant_disable_synced_folder', false)
 DISK_UUID = Time.now.utc.to_i
 
-# Much to do
-
-# [ ] Simplify the standard Vagrantfile: only VirtualBox anyway
-# [ ] adapt the provision ansible to use crystal as control machine
-
 # TODO the whole write to the inventory from Vagrantfile thing feels repeated,
 # most configurations are read from #{config_file} anyway
 generate_ansible_inventory = proc do
   # Empty the file
   File.open('./inventory.ini', 'w') do
-    puts ""
+    f.puts "# -*- mode: conf -*-"
   end
   File.open('./inventory.ini', 'a') do |f|
     ### Groups
-    f.puts '[mons]'
-    (0..NMONS - 1).map { |j| f.puts "#{LABEL_PREFIX}mon#{j}" }
-    f.puts '[osds]'
-    (0..NOSDS - 1).map { |j| f.puts "#{LABEL_PREFIX}osd#{j}" }
-    f.puts '[mdss]'
-    (0..NMDSS - 1).map { |j| f.puts "#{LABEL_PREFIX}mds#{j}" }
-    f.puts '[rgws]'
-    (0..NRGWS - 1).map { |j| f.puts "#{LABEL_PREFIX}rgw#{j}" }
-    f.puts '[nfss]'
-    (0..NNFSS - 1).map { |j| f.puts "#{LABEL_PREFIX}nfs#{j}" }
-    f.puts '[rbd_mirrors]'
-    (0..NRBD_MIRRORS - 1).map { |j| f.puts "#{LABEL_PREFIX}rbd_mirror#{j}" }
-    f.puts '[clients]'
-    (0..CLIENTS - 1).map { |j| f.puts "#{LABEL_PREFIX}client#{j}" }
-    f.puts '[iscsi_gw]'
-    (0..NISCSI_GWS - 1).map { |j| f.puts "#{LABEL_PREFIX}iscsi_gw#{j}" }
-    f.puts '[mgrs]'
-    (0..MGRS - 1).map { |j| f.puts "#{LABEL_PREFIX}mgr#{j}" }
+    # NOTE the upstream ansible provisioner uses Vagrant machine names, and since
+    # we are creating inventory file on our own, we need to use hostnames here.
+    hosts_groups = {
+      'mons'            => (0..NMONS - 1).map { |j| "mon#{j}" },
+      'osds'            => (0..NOSDS - 1).map { |j| "osd#{j}" },
+      'mdss'            => (0..NMDSS - 1).map { |j| "mds#{j}" },
+      'rgws'            => (0..NRGWS - 1).map { |j| "rgw#{j}" },
+      'nfss'            => (0..NNFSS - 1).map { |j| "nfs#{j}" },
+      'rbd_mirrors'     => (0..NRBD_MIRRORS - 1).map { |j| "rbd-mirror#{j}" },
+      'clients'         => (0..CLIENTS - 1).map { |j| "client#{j}" },
+      'iscsi_gw'        => (0..NISCSI_GWS - 1).map { |j| "iscsi-gw#{j}" },
+      'mgrs'            => (0..MGRS - 1).map { |j| "mgr#{j}" }
+    }
+    # NOTE internal lab domain
+    DOMAIN='cv'
+    hosts_groups.each do |group, array|
+      f.puts "[#{group}]"
+      array.each do |host|
+        f.puts "#{LABEL_PREFIX}ceph-#{host}.#{DOMAIN}"
+      end
+    end
+
     if RESTAPI then
       f.puts '[restapis]'
-      (0..NMONS - 1).map { |j| f.puts "#{LABEL_PREFIX}mon#{j}" }
+      (0..NMONS - 1).map { |j| f.puts "#{LABEL_PREFIX}ceph-mon#{j}.#{DOMAIN}" }
     end
 
     ### Vars
     # TODO a separate file?
+    # NOTE inventory file is ini format, so assignment should be done with `=`
     f.puts <<EXTRA_VARS
 
 [all:vars]
-cluster_network: "#{CLUSTER_SUBNET}.0/24",
-journal_size: 100,
-public_network: "#{PUBLIC_SUBNET}.0/24",
-devices: #{ settings['disks'] },
-journal_collocation: 'true',
-monitor_interface: #{ETH},
-os_tuning_params: #{ settings['os_tuning_params'] },
-pool_default_size: '2',
+cluster_network="#{CLUSTER_SUBNET}.0/24"
+journal_size=100
+public_network="#{PUBLIC_SUBNET}.0/24"
+devices=#{ settings['disks'] }
+journal_collocation='true'
+monitor_interface=#{ETH}
+## NOTE: complex variable type is hard to get right in an inventory file,
+## `os_tuning_params` should be set in the `group_vars/all.yml`
+## TODO Gerenate one automatically (also with other yaml file)
+# os_tuning_params='#{ settings['os_tuning_params'] }'
+pool_default_size='2',
 
 EXTRA_VARS
   end
 end
 
-# NOTE: `vagrant validate` is enough to have this script executed
-generate_ansible_inventory.call
+# TODO better to hook to validate subcommand?
+unless File.exist? "./inventory.ini"
+  # NOTE: `vagrant validate` is enough to have this script executed
+  generate_ansible_inventory.call
+end
 
 Vagrant.configure(2) do |config|
   config.vm.box = BOX
   config.vm.box_url = BOX_URL
   # workaround for https://github.com/mitchellh/vagrant/issues/5048
+  config.vm.box_check_update = false
   config.ssh.insert_key = false
   config.ssh.private_key_path = settings['ssh_private_key_path']
   config.ssh.username = USER
 
   # Faster bootup. Disables mounting the sync folder for libvirt and virtualbox
   config.vm.provider :virtualbox do |v,override|
+    v.linked_clone = true
     override.vm.synced_folder '.', SYNC_DIR, disabled: true
+  end
+
+  unless ASSIGN_STATIC_IP
+    config.vm.network "private_network", type: "dhcp"
   end
 
   (0..MGRS - 1).each do |i|
@@ -231,20 +247,23 @@ Vagrant.configure(2) do |config|
       end
       # Virtualbox
       osd.vm.provider :virtualbox do |vb|
-        # Create our own controller for consistency and to remove VM dependency
-        vb.customize ['storagectl', :id,
-                      '--name', 'OSD Controller',
-                      '--add', 'scsi']
-        (0..1).each do |d|
-          vb.customize ['createhd',
-                        '--filename', "disk-#{i}-#{d}",
-                        '--size', '11000'] unless File.exist?("disk-#{i}-#{d}.vdi")
-          vb.customize ['storageattach', :id,
-                        '--storagectl', 'OSD Controller',
-                        '--port', 3 + d,
-                        '--device', 0,
-                        '--type', 'hdd',
-                        '--medium', "disk-#{i}-#{d}.vdi"]
+        # NOTE: Use disk-${i}-0.vdi as a marker whether need to do the following
+        unless File.exist?("disk-#{i}-0.vdi")
+          # Create our own controller for consistency and to remove VM dependency
+          vb.customize ['storagectl', :id,
+                        '--name', 'OSD Controller',
+                        '--add', 'scsi']
+          (0..1).each do |d|
+            vb.customize ['createhd',
+                          '--filename', "disk-#{i}-#{d}",
+                          '--size', '11000']
+            vb.customize ['storageattach', :id,
+                          '--storagectl', 'OSD Controller',
+                          '--port', 3 + d,
+                          '--device', 0,
+                          '--type', 'hdd',
+                          '--medium', "disk-#{i}-#{d}.vdi"]
+          end
         end
         vb.customize ['modifyvm', :id, '--memory', "#{MEMORY}"]
       end
