@@ -33,17 +33,15 @@ function vagrantq {
     fi
 }
 
-# NOTE work around for vagrant 1.9.5 as 'vagrant ssh' doesn't work any more.
-# (acutally the interactive ssh doesn't work since 1.8)
-# NOTE The above doesn't work due to the pecularity of MobaXterm (not a tty,
-# stdin is not tty and etc.)
+# NOTE workaround for vagrant 1.9.5 as 'vagrant ssh' doesn't work well under
+# MobaXterm due to the pecularity of MobaXterm's tty
 function vagrant-ssh {
     # NOTE: check port to speed things up
-    if [ x"$SSH_FORWARDED_PORT" = x ]; then
-        # NOTE: vagrant port has weird control characters, looks like `$'\E[0m2200\E[0m\r'`
+    if [ "$PREV_VAGRANT_SSH_VM_ROOT" != "$(pwd)" ]; then
+        # NOTE: `vagrant port` output has weird control characters, looks like
+        # `$'\E[0m2200\E[0m\r'`
         export SSH_FORWARDED_PORT=$(vagrant port --guest 22 | grep -o -E '[0-9]{2,}')
-    else
-	      echo "WARNING: Reuse old PORT $SSH_FORWARDED_PORT. If wrong, run 'unset SSH_FORWARDED_PORT'."
+        export PREV_VAGRANT_SSH_VM_ROOT="$(pwd)"
     fi
     local ssh_port="$SSH_FORWARDED_PORT"
 
