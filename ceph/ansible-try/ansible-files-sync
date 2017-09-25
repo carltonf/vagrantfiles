@@ -5,10 +5,10 @@
 # Currently:
 # 1. Sync inventory file
 
-
-INVENTORY=inventory.ini
+ANSIBLE_FILES=./ansible_files
+INVENTORY=$ANSIBLE_FILES/hosts
 
 rm $INVENTORY
 vagrant validate
 
-scp $INVENTORY vagrant@crystal.cw:/opt/ssd/sources/ceph-ansible/hosts
+scp $ANSIBLE_FILES/* vagrant@crystal.cw:/opt/ssd/sources/ceph-ansible/

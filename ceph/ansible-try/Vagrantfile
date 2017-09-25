@@ -41,12 +41,13 @@ DISK_UUID = Time.now.utc.to_i
 
 # TODO the whole write to the inventory from Vagrantfile thing feels repeated,
 # most configurations are read from #{config_file} anyway
+INVENTORY_FILE = "./ansible-files/hosts"
 generate_ansible_inventory = proc do
   # Empty the file
-  File.open('./inventory.ini', 'w') do
+  File.open(INVENTORY_FILE, 'w') do |f|
     f.puts "# -*- mode: conf -*-"
   end
-  File.open('./inventory.ini', 'a') do |f|
+  File.open(INVENTORY_FILE, 'a') do |f|
     ### Groups
     # NOTE the upstream ansible provisioner uses Vagrant machine names, and since
     # we are creating inventory file on our own, we need to use hostnames here.
@@ -98,7 +99,7 @@ EXTRA_VARS
 end
 
 # TODO better to hook to validate subcommand?
-unless File.exist? "./inventory.ini"
+unless File.exist? INVENTORY_FILE
   # NOTE: `vagrant validate` is enough to have this script executed
   generate_ansible_inventory.call
 end
