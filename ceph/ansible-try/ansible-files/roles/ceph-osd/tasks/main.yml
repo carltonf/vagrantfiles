@@ -1,0 +1,76 @@
+---
+- name: include check_mandatory_vars.yml
+  include: check_mandatory_vars.yml
+
+- name: include pre_requisite.yml
+  include: pre_requisite.yml
+  when:
+    - not containerized_deployment
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include ceph_disk_cli_options_facts.yml
+  include: ceph_disk_cli_options_facts.yml
+
+- name: set_fact devices generate device list when osd_auto_discovery
+  set_fact:
+    devices: "{{ devices | default([]) + [ item.key | regex_replace('^', '/dev/') ] }}"
+  with_dict: "{{ ansible_devices }}"
+  when:
+    - ansible_devices is defined
+    - item.value.removable == "0"
+    - item.value.partitions|count == 0
+    - item.value.holders|count == 0
+    - osd_auto_discovery
+
+- name: include check_devices.yml
+  include: check_devices.yml
+
+- name: include copy_configs.yml
+  include: copy_configs.yml
+  when:
+    - containerized_deployment
+    - not containerized_deployment_with_kv
+
+- name: include scenarios/collocated.yml
+  include: scenarios/collocated.yml
+  when:
+    - osd_scenario == 'collocated'
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include scenarios/non-collocated.yml
+  include: scenarios/non-collocated.yml
+  when:
+    - osd_scenario == 'non-collocated'
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include scenarios/lvm.yml
+  include: scenarios/lvm.yml
+  when:
+    - osd_scenario == 'lvm'
+    - not containerized_deployment
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include activate_osds.yml
+  include: activate_osds.yml
+  when:
+    - not containerized_deployment
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include start_osds.yml
+  include: start_osds.yml
+  when:
+    - not containerized_deployment
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: include docker/main.yml
+  include: docker/main.yml
+  when:
+    - containerized_deployment
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False

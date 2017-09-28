@@ -1,0 +1,11 @@
+Ansible playbook for my own ceph cluster experiment.
+
+It borrowed from https://github.com/ceph/ceph-ansible, with my specific goals
+and restrictions.
+
+Goal: understand *in details* how to set up a ceph cluster.
+
+Restrictions:
+- The base box is ceph/ubuntu-xenial as recommanded by the ceph-asnible
+  upstream.
+- For now, only virtualbox case is used.

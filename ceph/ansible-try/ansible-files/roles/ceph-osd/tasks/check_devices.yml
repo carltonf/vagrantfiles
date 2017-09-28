@@ -1,0 +1,51 @@
+---
+# NOTE (leseb): current behavior of ceph-disk is to fail when the device is mounted "stderr: ceph-disk: Error: Device is mounted: /dev/sdb1"
+# the return code is 1, which makes sense, however ideally if ceph-disk will detect a ceph partition
+# it should exist we rc=0 and don't do anything unless we do something like --force
+# As as a final word, I prefer to keep the partition check instead of running ceph-disk prepare with "failed_when: false"
+# I believe it's safer
+#
+# regex syntax uses (pat1|pat2|...|patN) for different families of device
+# names, but has a common expression for partition number at the end.
+# allow 2-digit partition numbers so fast SSDs can be shared by > 9 disks
+# for SSD journals.
+
+- name: include check_devices_static.yml
+  include: check_devices_static.yml
+  # Hard code this so we will skip the entire file instead of individual tasks (Default isn't Consistent)
+  static: False
+
+- name: check the partition status of the journal devices
+  command: "parted --script {{ item }} print"
+  with_items:
+    - "{{ dedicated_devices|unique }}"
+  changed_when: false
+  failed_when: false
+  always_run: true
+  register: journal_partition_status
+  when:
+    - osd_scenario == 'non-collocated'
+
+- name: fix partitions gpt header or labels of the journal device(s)
+  shell: "sgdisk --zap-all --clear --mbrtogpt -- {{ item.1 }} || sgdisk --zap-all --clear --mbrtogpt -- {{ item.1 }}"
+  with_together:
+    - "{{ journal_partition_status.results }}"
+    - "{{ dedicated_devices|unique }}"
+  changed_when: false
+  when:
+    - not item.0.get("skipped")
+    - item.0.get("rc", 0) != 0
+    - osd_scenario == 'non-collocated'
+    - not containerized_deployment
+
+- name: create gpt disk label of the journal device(s)
+  command: parted --script {{ item.1 }} mklabel gpt
+  with_together:
+    - "{{ journal_partition_status.results }}"
+    - "{{ dedicated_devices|unique }}"
+  changed_when: false
+  when:
+    - not item.0.get("skipped")
+    - item.0.get("rc", 0) != 0
+    - osd_scenario == 'non-collocated'
+    - containerized_deployment
