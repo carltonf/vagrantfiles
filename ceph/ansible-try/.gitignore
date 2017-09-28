@@ -1,2 +1,2 @@
 *.vdi
-inventory.ini
+ansible-files/hosts

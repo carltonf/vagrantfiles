@@ -31,7 +31,7 @@ BOX_URL         = settings['vagrant_box_url']
 SYNC_DIR        = settings['vagrant_sync_dir']
 MEMORY          = settings['memory'] || 1024
 ETH             = settings['eth']
-USER            = settings['ssh_username']
+USER            = settings['ssh_username'] ? settings['ssh_username'] : "vagrant"
 DEBUG           = settings['debug']
 
 # TODO how does this impact the rest of the setup
@@ -39,7 +39,7 @@ ASSIGN_STATIC_IP = false
 DISABLE_SYNCED_FOLDER = settings.fetch('vagrant_disable_synced_folder', false)
 DISK_UUID = Time.now.utc.to_i
 
-# TODO the whole write to the inventory from Vagrantfile thing feels repeated,
+# TODO the whole write to the inventory from Vagrantfile thing feels repetive,
 # most configurations are read from #{config_file} anyway
 INVENTORY_FILE = "./ansible-files/hosts"
 generate_ansible_inventory = proc do
@@ -86,7 +86,7 @@ cluster_network="#{CLUSTER_SUBNET}.0/24"
 journal_size=100
 public_network="#{PUBLIC_SUBNET}.0/24"
 devices=#{ settings['disks'] }
-journal_collocation='true'
+osd_scenario=collocated
 monitor_interface=#{ETH}
 ## NOTE: complex variable type is hard to get right in an inventory file,
 ## `os_tuning_params` should be set in the `group_vars/all.yml`
@@ -110,8 +110,6 @@ Vagrant.configure(2) do |config|
   # workaround for https://github.com/mitchellh/vagrant/issues/5048
   config.vm.box_check_update = false
   config.ssh.insert_key = false
-  config.ssh.private_key_path = settings['ssh_private_key_path']
-  config.ssh.username = USER
 
   # Faster bootup. Disables mounting the sync folder for libvirt and virtualbox
   config.vm.provider :virtualbox do |v,override|

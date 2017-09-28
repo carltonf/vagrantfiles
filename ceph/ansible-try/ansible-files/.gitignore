@@ -1,0 +1,5 @@
+# ansible.cfg: [defaults] log_path = ./ansible.log
+ansible.log
+hosts
+*.pyc
+fetch/*

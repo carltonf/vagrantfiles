@@ -1,10 +1,5 @@
-# Debug mode, runs Ansible with -vvvv
-debug: false
-
-ssh_username: vagrant
-
 # DEFINE THE NUMBER OF VMS TO RUN
-mon_vms: 1
+mon_vms: 3
 osd_vms: 3
 mds_vms: 0
 rgw_vms: 0
@@ -17,14 +12,16 @@ mgr_vms: 0
 # Deploy RESTAPI on each of the Monitors
 restapi: true
 
-
-# SUBNETS TO USE FOR THE VMS
-# TODO understand the following better
+# SUBNETS TO USE FOR THE VMS, well I'm gonna use the same network as there is no
+# security concerns.
 public_subnet: 172.28.128
 cluster_subnet: 172.28.128
 
-# NOTE make sure the net.ifnames=0 are set
-# or use enp0s8 as I will use ubuntu/xenial anyway
+# MEMORY
+# set 1024 for CentOS
+memory: 512
+
+# NOTE better to have "net.ifnames=0" set
 eth: 'eth1'
 
 # For Xenial use
@@ -53,3 +50,5 @@ os_tuning_params:
   - { name: kernel.pid_max, value: 4194303 }
   - { name: fs.file-max, value: 26234859 }
 
+# Debug mode, runs Ansible with -vvvv
+debug: false
