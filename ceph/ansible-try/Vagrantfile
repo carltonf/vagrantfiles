@@ -10,7 +10,7 @@
 require 'yaml'
 require 'time'
 
-config_file=File.expand_path(File.join( File.dirname(__FILE__), 'vagrant_variables.yml' ))
+config_file=File.expand_path('vagrant_variables.yml', File.dirname(__FILE__))
 settings=YAML.load_file(config_file)
 
 LABEL_PREFIX    = settings['label_prefix'] ? settings['label_prefix'] + "-" : ""
@@ -41,7 +41,7 @@ DISK_UUID = Time.now.utc.to_i
 
 # TODO the whole write to the inventory from Vagrantfile thing feels repetive,
 # most configurations are read from #{config_file} anyway
-INVENTORY_FILE = "./ansible-files/hosts"
+INVENTORY_FILE = File.expand_path('ansible-files/hosts', File.dirname(__FILE__))
 generate_ansible_inventory = proc do
   # Empty the file
   File.open(INVENTORY_FILE, 'w') do |f|
@@ -98,10 +98,15 @@ EXTRA_VARS
   end
 end
 
-# TODO better to hook to validate subcommand?
-unless File.exist? INVENTORY_FILE
-  # NOTE: `vagrant validate` is enough to have this script executed
+# NOTE regenerate the inventory_file if:
+# 1. it doesn't exist
+# 2. Older than Vagrantfile or vagrant_variables.yml
+if not File.exist? INVENTORY_FILE \
+      or File.mtime(__FILE__) > File.mtime(INVENTORY_FILE) \
+      or File.mtime(config_file) > File.mtime(INVENTORY_FILE)
+  # NOTE: `vagrant validate` can be used generate the inventory file only
   generate_ansible_inventory.call
+  puts "* INFO: inventory file regenerated: #{INVENTORY_FILE}"
 end
 
 Vagrant.configure(2) do |config|
